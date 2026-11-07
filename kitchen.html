@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,8 +16,8 @@
         <div class="flex items-center space-x-3">
             <span class="text-3xl">🍸</span>
             <div>
-                <h1 class="font-bold text-lg tracking-wider text-zinc-900 uppercase">BAR DISPLAY SYSTEM</h1>
-                <p class="text-xs text-zinc-500">Live Ticket Stream</p>
+                <h1 class="font-bold text-lg tracking-wider text-zinc-900 uppercase">SISTEM ZA ŠANK (KDS)</h1>
+                <p class="text-xs text-zinc-500">Praćenje porudžbina u realnom vremenu</p>
             </div>
         </div>
         <div class="flex items-center space-x-4">
@@ -40,7 +40,7 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.app.js";
+        import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyArFtfAitFwuy13dvqAGu_GgnSA4cGYBIk",
@@ -59,10 +59,12 @@
         onValue(ref(db, 'orders'), (snapshot) => {
             const orders = snapshot.val() || {};
             const grid = document.getElementById('orders-grid');
+            if(!grid) return;
             grid.innerHTML = '';
             
             const activeKeys = Object.keys(orders).filter(k => orders[k].status !== 'completed');
-            document.getElementById('active-tickets-count').innerText = `${activeKeys.length} Aktivnih Porudžbina`;
+            const countEl = document.getElementById('active-tickets-count');
+            if(countEl) countEl.innerText = `${activeKeys.length} Aktivnih Porudžbina`;
 
             if (activeKeys.length === 0) {
                 grid.innerHTML = `
@@ -97,7 +99,7 @@
                         <div>
                             <div class="flex justify-between items-center pb-2 border-b border-zinc-200">
                                 <span class="font-bold text-orange-700 text-base">Sto #${order.table}</span>
-                                <span class="text-[10px] font-mono bg-[#FAF9F5] text-zinc-600 px-2 py-0.5 rounded border border-zinc-200/60">${timeAgo} min</span>
+                                <span class="text-[10px] font-mono bg-[#FAF9F5] text-zinc-600 px-2 py-0.5 rounded border border-zinc-200/60">${timeAgo} min pre</span>
                             </div>
                             <div class="py-2 space-y-1">
                                 ${itemsHtml}
@@ -115,6 +117,7 @@
         onValue(ref(db, 'tables'), (snapshot) => {
             const tables = snapshot.val() || {};
             const alertsContainer = document.getElementById('waiter-alerts');
+            if(!alertsContainer) return;
             alertsContainer.innerHTML = '';
 
             for (const [tblKey, tblData] of Object.entries(tables)) {
