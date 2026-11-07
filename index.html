@@ -17,31 +17,26 @@
             <span class="text-2xl">🍸</span>
             <div>
                 <h1 id="brand-title" class="font-bold text-base tracking-wider text-zinc-900 uppercase">THE APOTHECARY BAR</h1>
-                <p id="table-indicator" class="text-xs text-orange-700 font-semibold">Table: Loading...</p>
+                <p id="table-indicator" class="text-xs text-orange-700 font-semibold">Sto: Učitavanje...</p>
             </div>
         </div>
         
-        <!-- Controls: Language & Currency -->
+        <!-- Language Selector Only (Serbian default, English, Russian) -->
         <div class="flex items-center space-x-2">
-            <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-[#FAF9F5] text-xs text-zinc-800 border border-zinc-300 rounded-lg px-2 py-1 focus:outline-none">
+            <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-[#FAF9F5] text-xs text-zinc-800 border border-zinc-300 rounded-lg px-2.5 py-1.5 focus:outline-none font-medium">
+                <option value="sr" selected>SR</option>
                 <option value="en">EN</option>
-                <option value="ja">日本語</option>
-                <option value="tr">TR</option>
-            </select>
-            <select id="curr-select" onchange="changeCurrency(this.value)" class="bg-[#FAF9F5] text-xs text-zinc-800 border border-zinc-300 rounded-lg px-2 py-1 focus:outline-none">
-                <option value="USD">$ USD</option>
-                <option value="EUR">€ EUR</option>
-                <option value="TRY">₺ TRY</option>
+                <option value="ru">RU</option>
             </select>
         </div>
     </header>
 
     <!-- Category / Filter Pills -->
     <div class="px-4 py-3 overflow-x-auto whitespace-nowrap scrollbar-none border-b border-zinc-200/60 bg-white/40 flex space-x-2">
-        <button onclick="filterMenu('all')" class="filter-btn px-3.5 py-1.5 bg-orange-700 text-white font-medium text-xs rounded-full shadow-sm transition">All Drinks & Eats</button>
-        <button onclick="filterMenu('cocktail')" class="filter-btn px-3.5 py-1.5 bg-zinc-200/70 text-zinc-700 text-xs rounded-full hover:bg-zinc-300/70 transition">Signature Cocktails 🍹</button>
-        <button onclick="filterMenu('craft')" class="filter-btn px-3.5 py-1.5 bg-zinc-200/70 text-zinc-700 text-xs rounded-full hover:bg-zinc-300/70 transition">Craft Beers 🍺</button>
-        <button onclick="filterMenu('bites')" class="filter-btn px-3.5 py-1.5 bg-zinc-200/70 text-zinc-700 text-xs rounded-full hover:bg-zinc-300/70 transition">Bar Bites 🥨</button>
+        <button onclick="filterMenu('all')" id="filter-all-btn" class="filter-btn px-3.5 py-1.5 bg-orange-700 text-white font-medium text-xs rounded-full shadow-sm transition">Sve Piće i Hrana</button>
+        <button onclick="filterMenu('cocktail')" id="filter-cocktail-btn" class="filter-btn px-3.5 py-1.5 bg-zinc-200/70 text-zinc-700 text-xs rounded-full hover:bg-zinc-300/70 transition">Kokteli 🍹</button>
+        <button onclick="filterMenu('craft')" id="filter-craft-btn" class="filter-btn px-3.5 py-1.5 bg-zinc-200/70 text-zinc-700 text-xs rounded-full hover:bg-zinc-300/70 transition">Zanatsko Pivo 🍺</button>
+        <button onclick="filterMenu('bites')" id="filter-bites-btn" class="filter-btn px-3.5 py-1.5 bg-zinc-200/70 text-zinc-700 text-xs rounded-full hover:bg-zinc-300/70 transition">Zalogaji 🥨</button>
     </div>
 
     <!-- Main Menu Container -->
@@ -51,14 +46,14 @@
 
     <!-- Floating Action Bar (Cart & Call Waiter) -->
     <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-zinc-200/80 p-4 max-w-md mx-auto flex items-center justify-between z-40 shadow-lg">
-        <button onclick="callWaiter()" class="bg-[#FAF9F5] hover:bg-zinc-100 text-orange-700 border border-zinc-300 px-4 py-2.5 rounded-xl font-medium text-xs flex items-center space-x-2 transition">
+        <button onclick="callWaiter()" id="call-waiter-btn" class="bg-[#FAF9F5] hover:bg-zinc-100 text-orange-700 border border-zinc-300 px-4 py-2.5 rounded-xl font-medium text-xs flex items-center space-x-2 transition">
             <i class="fa-solid fa-bell"></i>
-            <span id="call-waiter-text">Call Bartender</span>
+            <span>Pozovi Barmena</span>
         </button>
         
-        <button onclick="openCart()" class="bg-orange-700 hover:bg-orange-800 text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center space-x-3 shadow-md shadow-orange-700/20 transition">
+        <button onclick="openCart()" id="view-tab-btn" class="bg-orange-700 hover:bg-orange-800 text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center space-x-3 shadow-md shadow-orange-700/20 transition">
             <i class="fa-solid fa-cart-shopping"></i>
-            <span id="cart-btn-text">View Tab</span>
+            <span id="cart-btn-text">Pregled Računa</span>
             <span id="cart-count" class="bg-white text-orange-700 text-xs px-2 py-0.5 rounded-full font-mono font-bold">0</span>
         </button>
     </div>
@@ -73,12 +68,12 @@
             <p id="modal-item-desc" class="text-xs text-zinc-500"></p>
             
             <div class="space-y-2">
-                <label class="text-xs font-semibold text-zinc-700 uppercase tracking-wider">Special Instructions / Modifiers</label>
-                <input type="text" id="modal-notes" placeholder="e.g. Extra ice, low sugar, extra lime..." class="w-full bg-[#FAF9F5] border border-zinc-300 rounded-lg p-2.5 text-xs text-zinc-900 focus:outline-none focus:border-orange-700">
+                <label id="modal-notes-label" class="text-xs font-semibold text-zinc-700 uppercase tracking-wider">Posebne Napomene / Izmene</label>
+                <input type="text" id="modal-notes" placeholder="npr. Više leda, manje šećera..." class="w-full bg-[#FAF9F5] border border-zinc-300 rounded-lg p-2.5 text-xs text-zinc-900 focus:outline-none focus:border-orange-700">
             </div>
 
-            <button onclick="confirmAddToCart()" class="w-full bg-orange-700 hover:bg-orange-800 text-white font-bold py-3 rounded-xl text-sm shadow-md transition">
-                Add to Table Tab
+            <button onclick="confirmAddToCart()" id="modal-add-btn" class="w-full bg-orange-700 hover:bg-orange-800 text-white font-bold py-3 rounded-xl text-sm shadow-md transition">
+                Dodaj na sto
             </button>
         </div>
     </div>
@@ -89,7 +84,7 @@
             <div class="flex justify-between items-center pb-4 border-b border-zinc-200">
                 <h2 class="font-bold text-base flex items-center space-x-2 text-zinc-900">
                     <i class="fa-solid fa-receipt text-orange-700"></i>
-                    <span id="cart-header-title">Table Running Tab</span>
+                    <span id="cart-header-title">Trenutni Račun Stola</span>
                 </h2>
                 <button onclick="closeCart()" class="text-zinc-400 hover:text-zinc-700"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
@@ -102,27 +97,27 @@
             <!-- Split Bill Calculator Box -->
             <div class="bg-[#FAF9F5] rounded-xl p-3 border border-zinc-200 my-2 space-y-2">
                 <div class="flex justify-between items-center text-xs">
-                    <span id="split-label" class="text-zinc-500">Split Bill Calculator:</span>
+                    <span id="split-label" class="text-zinc-500">Deljenje računa:</span>
                     <div class="flex items-center space-x-2">
                         <button onclick="adjustSplit(-1)" class="w-6 h-6 bg-zinc-200 text-zinc-800 rounded font-bold hover:bg-zinc-300">-</button>
-                        <span id="split-count" class="font-mono font-bold text-orange-700">1</span> <span class="text-zinc-500">guests</span>
+                        <span id="split-count" class="font-mono font-bold text-orange-700">1</span> <span id="split-guests-label" class="text-zinc-500">gostiju</span>
                         <button onclick="adjustSplit(1)" class="w-6 h-6 bg-zinc-200 text-zinc-800 rounded font-bold hover:bg-zinc-300">+</button>
                     </div>
                 </div>
                 <div class="flex justify-between items-center text-xs font-semibold pt-1 border-t border-zinc-200">
-                    <span id="per-person-label" class="text-zinc-700">Per Person:</span>
-                    <span id="split-per-person-amount" class="font-mono text-orange-700">$0</span>
+                    <span id="per-person-label" class="text-zinc-700">Po osobi:</span>
+                    <span id="split-per-person-amount" class="font-mono text-orange-700">0 RSD</span>
                 </div>
             </div>
 
             <!-- Total & Checkout -->
             <div class="pt-3 border-t border-zinc-200 space-y-3">
                 <div class="flex justify-between items-center font-bold text-sm text-zinc-900">
-                    <span>Total Tab:</span>
-                    <span id="cart-total-amount" class="text-orange-700 font-mono text-base">$0</span>
+                    <span id="total-label">Ukupan Račun:</span>
+                    <span id="cart-total-amount" class="text-orange-700 font-mono text-base">0 RSD</span>
                 </div>
-                <button onclick="placeOrder()" class="w-full bg-orange-700 hover:bg-orange-800 text-white font-bold py-3 rounded-xl text-sm shadow-md transition">
-                    Send Order to Bar 🥂
+                <button onclick="placeOrder()" id="checkout-btn" class="w-full bg-orange-700 hover:bg-orange-800 text-white font-bold py-3 rounded-xl text-sm shadow-md transition">
+                    Pošalji porudžbinu šanku 🥂
                 </button>
             </div>
         </div>
@@ -132,14 +127,14 @@
     <div id="review-modal" class="fixed inset-0 bg-zinc-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white border border-zinc-200 w-full max-w-sm rounded-2xl p-6 text-center space-y-4 shadow-2xl">
             <span class="text-4xl">⭐</span>
-            <h3 class="font-bold text-lg text-zinc-900">Enjoying your night?</h3>
-            <p class="text-xs text-zinc-500">If you loved the drinks and atmosphere, leave us a quick review on Google!</p>
+            <h3 id="review-title" class="font-bold text-lg text-zinc-900">Kako provodite večeras?</h3>
+            <p id="review-desc" class="text-xs text-zinc-500">Ako vam se sviđa atmosfera i piće, ostavite nam kratku ocenu na Google-u!</p>
             <div class="space-y-2 pt-2">
-                <a href="https://maps.google.com" target="_blank" class="block w-full bg-orange-700 hover:bg-orange-800 text-white font-bold py-3 rounded-xl text-xs shadow-md transition">
-                    Leave a Google Review 🌟
+                <a href="https://maps.google.com" target="_blank" id="review-link-btn" class="block w-full bg-orange-700 hover:bg-orange-800 text-white font-bold py-3 rounded-xl text-xs shadow-md transition">
+                    Ostavi Google Recenziju 🌟
                 </a>
-                <button onclick="closeReviewModal()" class="w-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-medium py-2.5 rounded-xl text-xs transition">
-                    Close
+                <button onclick="closeReviewModal()" id="review-close-btn" class="w-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-medium py-2.5 rounded-xl text-xs transition">
+                    Zatvori
                 </button>
             </div>
         </div>
@@ -171,41 +166,153 @@
         const tableId = urlParams.get('table') || '1';
         const isAdmin = urlParams.get('admin') === 'secret';
         
-        document.getElementById('table-indicator').innerText = isAdmin ? "🔧 ADMIN MODE (Stock Control)" : `Table: #${tableId}`;
-
-        let currentLang = 'en';
-        let currentCurr = 'USD';
+        let currentLang = 'sr'; // Serbian by default
         let currentFilter = 'all';
         let splitCount = 1;
         let selectedItemForModal = null;
         let cartItems = {};
         let soldOutItems = {};
 
-        // Modern Bar Menu Data Store
+        // UI Translation Dictionary
+        const uiText = {
+            sr: {
+                table: isAdmin ? "🔧 ADMIN REŽIM (Kontrola zaliha)" : `Sto: #${tableId}`,
+                allCat: "Sve Piće i Hrana",
+                cocktailCat: "Kokteli 🍹",
+                craftCat: "Zanatsko Pivo 🍺",
+                bitesCat: "Zalogaji 🥨",
+                callWaiter: "Pozovi Barmena",
+                viewTab: "Pregled Računa",
+                noteLabel: "Posebne Napomene / Izmene",
+                notePlaceholder: "npr. Više leda, manje šećera...",
+                addToTab: "Dodaj na sto",
+                cartHeader: "Trenutni Račun Stola",
+                splitLabel: "Deljenje računa:",
+                guestsLabel: "gostiju",
+                perPerson: "Po osobi:",
+                totalLabel: "Ukupan Račun:",
+                checkout: "Pošalji porudžbinu šanku 🥂",
+                reviewTitle: "Kako provodite večeras?",
+                reviewDesc: "Ako vam se sviđa atmosfera i piće, ostavite nam kratku ocenu na Google-u!",
+                reviewBtn: "Ostavi Google Recenziju 🌟",
+                reviewClose: "Zatvori",
+                soldOut: "Rasprodato",
+                inStock: "Dostupno 🟢",
+                makeSoldOut: "Rasprodato 🔴",
+                orderBtn: "+ Poruči",
+                adminNotice: "REŽIM KONTROLE",
+                waiterAlert: "zatražio asistenciju!",
+                dismiss: "Ukloni"
+            },
+            en: {
+                table: isAdmin ? "🔧 ADMIN MODE (Stock Control)" : `Table: #${tableId}`,
+                allCat: "All Drinks & Eats",
+                cocktailCat: "Signature Cocktails 🍹",
+                craftCat: "Craft Beers 🍺",
+                bitesCat: "Bar Bites 🥨",
+                callWaiter: "Call Bartender",
+                viewTab: "View Tab",
+                noteLabel: "Special Instructions / Modifiers",
+                notePlaceholder: "e.g. Extra ice, low sugar...",
+                addToTab: "Add to Table Tab",
+                cartHeader: "Table Running Tab",
+                splitLabel: "Split Bill Calculator:",
+                guestsLabel: "guests",
+                perPerson: "Per Person:",
+                totalLabel: "Total Tab:",
+                checkout: "Send Order to Bar 🥂",
+                reviewTitle: "Enjoying your night?",
+                reviewDesc: "If you loved the drinks and atmosphere, leave us a quick review on Google!",
+                reviewBtn: "Leave a Google Review 🌟",
+                reviewClose: "Close",
+                soldOut: "Sold Out",
+                inStock: "In Stock 🟢",
+                makeSoldOut: "Sold Out 🔴",
+                orderBtn: "+ Order",
+                adminNotice: "STOCK CONTROL",
+                waiterAlert: "requested assistance!",
+                dismiss: "Dismiss"
+            },
+            ru: {
+                table: isAdmin ? "🔧 РЕЖИМ АДМИНА (Склад)" : `Стол: #${tableId}`,
+                allCat: "Всё меню",
+                cocktailCat: "Коктейли 🍹",
+                craftCat: "Крафтовое пиво 🍺",
+                bitesCat: "Закуски 🥨",
+                callWaiter: "Зов бармена",
+                viewTab: "Счёт стола",
+                noteLabel: "Особые пожелания / Замечания",
+                notePlaceholder: "напр. Больше льда, меньше сахара...",
+                addToTab: "Добавить в счёт",
+                cartHeader: "Текущий счёт стола",
+                splitLabel: "Разделить счёт:",
+                guestsLabel: "гостей",
+                perPerson: "С человека:",
+                totalLabel: "Итого:",
+                checkout: "Отправить заказ в бар 🥂",
+                reviewTitle: "Вам всё нравится?",
+                reviewDesc: "Если вам понравились наши напитки и атмосфера, оставьте отзыв в Google!",
+                reviewBtn: "Оставить отзыв в Google 🌟",
+                reviewClose: "Закрыть",
+                soldOut: "Нет в наличии",
+                inStock: "В наличии 🟢",
+                makeSoldOut: "Распродано 🔴",
+                orderBtn: "+ Заказать",
+                adminNotice: "УПРАВЛЕНИЕ СКЛАДОМ",
+                waiterAlert: "просит подойти!",
+                dismiss: "Скрыть"
+            }
+        };
+
+        // Modern Bar Menu Data Store (Prices in RSD)
         const menuData = [
-            { id: 'b1', cat: 'cocktails', tag: 'cocktail', name: { en: 'Smoked Old Fashioned', ja: 'スモーク・オールドファッションed', tr: 'İsli Old Fashioned' }, price: 15, desc: { en: 'Bourbon, aromatic bitters, orange peel, angostura', ja: 'バーボン、ビターズ、オレンジピール', tr: 'Burbon viski, aromatik bitter, portakal kabuğu' }, img: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&auto=format&fit=crop&q=60' },
-            { id: 'b2', cat: 'cocktails', tag: 'cocktail', name: { en: 'Spicy Espresso Martini', ja: 'スパイス・エスプレッソマティーニ', tr: 'Baharatlı Espresso Martini' }, price: 16, desc: { en: 'Vodka, fresh espresso, coffee liqueur, chili rim', ja: 'ウォッカ、生エスプレッソ、コーヒーリキュール', tr: 'Votka, taze espresso, kahve likörü' }, img: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&auto=format&fit=crop&q=60' },
-            { id: 'b3', cat: 'beers', tag: 'craft', name: { en: 'Hazy IPA (Pint)', ja: 'ヘイジーIPA', tr: 'Hazy IPA Bira' }, price: 8, desc: { en: 'Citrusy, tropical double dry-hopped craft IPA', ja: 'トロピカルな香りのクラフトビール', tr: 'Narenciye aromalı zengin craft bira' }, img: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&auto=format&fit=crop&q=60' },
-            { id: 'b4', cat: 'beers', tag: 'craft', name: { en: 'Crisp Belgian Witbier', ja: 'ベルジャン・ホワイト', tr: 'Belçika Buğday Birası' }, price: 7, desc: { en: 'Wheat beer brewed with coriander and orange peel', ja: 'コリアンダーとオレンジピールの小麦ビール', tr: 'Kişniş ve portakal kabuklu buğday birası' }, img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&auto=format&fit=crop&q=60' },
-            { id: 'b5', cat: 'bites', tag: 'bites', name: { en: 'Truffle Parmesan Fries', ja: 'トリュフ・フライドポテト', tr: 'Trüflü Parmesanlı Patates' }, price: 10, desc: { en: 'Hand-cut fries, white truffle oil, shaved parmesan', ja: 'トリュフオイルとパルミジャーノチーズ', tr: 'El kesimi patates, beyaz trüf yağı, parmesan' }, img: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=400&auto=format&fit=crop&q=60' },
-            { id: 'b6', cat: 'bites', tag: 'bites', name: { en: 'Artisan Cheese & Charcuterie', ja: 'チーズ＆シャルキュトリ板', tr: 'Peynir ve Şarküteri Tabağı' }, price: 22, desc: { en: 'Cured meats, aged cheeses, fig jam, toasted crostini', ja: '熟成チーズとサラミ、イチジクジャムのセット', tr: 'Kurutulmuş etler, olgunlaştırılmış peynirler, kıtır ekmek' }, img: 'https://images.unsplash.com/photo-1541529086526-db283c563270?w=400&auto=format&fit=crop&q=60' }
+            { id: 'b1', cat: 'cocktails', tag: 'cocktail', name: { sr: 'Smoked Old Fashioned', en: 'Smoked Old Fashioned', ru: 'Смоoked Old Fashioned' }, price: 1200, desc: { sr: 'Burbon, aromatični bitter, kora pomorandže, angostura', en: 'Bourbon, aromatic bitters, orange peel, angostura', ru: 'Бурбон, биттер, цедра апельсина' }, img: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&auto=format&fit=crop&q=60' },
+            { id: 'b2', cat: 'cocktails', tag: 'cocktail', name: { sr: 'Spicy Espresso Martini', en: 'Spicy Espresso Martini', ru: 'Пряный Эспрессо Мартини' }, price: 1350, desc: { sr: 'Vodka, sveži espresso, liker od kafe, ivica od čilija', en: 'Vodka, fresh espresso, coffee liqueur, chili rim', ru: 'Водка, свежий эспрессо, кофейный ликер, чили' }, img: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&auto=format&fit=crop&q=60' },
+            { id: 'b3', cat: 'beers', tag: 'craft', name: { sr: 'Hazy IPA (Pinta)', en: 'Hazy IPA (Pint)', ru: 'Hazy IPA (Пинта)' }, price: 650, desc: { sr: 'Citrusno, tropsko zanatsko pivo sa duplim hmeljenjem', en: 'Citrusy, tropical double dry-hopped craft IPA', ru: 'Цитрусовый, тропический крафтовый IPA' }, img: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&auto=format&fit=crop&q=60' },
+            { id: 'b4', cat: 'beers', tag: 'craft', name: { sr: 'Belgian Witbier', en: 'Crisp Belgian Witbier', ru: 'Бельгийское пшеничное' }, price: 600, desc: { sr: 'Pšenično pivo kuvano sa korijanderom i korom pomorandže', en: 'Wheat beer brewed with coriander and orange peel', ru: 'Пшеничное пиво с кориандром и цедрой' }, img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&auto=format&fit=crop&q=60' },
+            { id: 'b5', cat: 'bites', tag: 'bites', name: { sr: 'Pomfrit sa Trufama i Parmezanom', en: 'Truffle Parmesan Fries', ru: 'Картофель фри с трюфелем и пармезаном' }, price: 850, desc: { sr: 'Ručno seckani krompir, ulje belog tartufa, rendani parmezan', en: 'Hand-cut fries, white truffle oil, shaved parmesan', ru: 'Картофель фри, трюфельное масло, пармезан' }, img: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=400&auto=format&fit=crop&q=60' },
+            { id: 'b6', cat: 'bites', tag: 'bites', name: { sr: 'Domaća Selekcija Sireva i Suhomesnatog', en: 'Artisan Cheese & Charcuterie', ru: 'Сырная и мясная тарелка' }, price: 1800, desc: { sr: 'Suvomescapeni proizvodi, odležali sirevi, džem od smokve, hleb', en: 'Cured meats, aged cheeses, fig jam, toasted crostini', ru: 'Вяленое мясо, выдержанные сыры, инжирный джем' }, img: 'https://images.unsplash.com/photo-1541529086526-db283c563270?w=400&auto=format&fit=crop&q=60' }
         ];
 
-        // Currency Exchange Rates (Base USD)
-        const exchangeRates = { USD: 1, EUR: 0.92, TRY: 34.0 };
-        const currencySymbols = { USD: '$', EUR: '€', TRY: '₺' };
-
-        function formatPrice(usdPrice) {
-            const converted = usdPrice * exchangeRates[currentCurr];
-            return `${currencySymbols[currentCurr]}${Math.round(converted)}`;
+        function formatPrice(rsdPrice) {
+            return `${Math.round(rsdPrice)} RSD`;
         }
 
-        // Render Menu
+        // Render Menu & Update Text Elements
         window.renderMenu = function() {
+            const t = uiText[currentLang];
+
+            // Update static UI elements
+            document.getElementById('table-indicator').innerText = t.table;
+            document.getElementById('filter-all-btn').innerText = t.allCat;
+            document.getElementById('filter-cocktail-btn').innerText = t.cocktailCat;
+            document.getElementById('filter-craft-btn').innerText = t.craftCat;
+            document.getElementById('filter-bites-btn').innerText = t.bitesCat;
+            document.getElementById('call-waiter-btn').querySelector('span').innerText = t.callWaiter;
+            document.getElementById('cart-btn-text').innerText = t.viewTab;
+            document.getElementById('modal-notes-label').innerText = t.noteLabel;
+            document.getElementById('modal-notes').placeholder = t.notePlaceholder;
+            document.getElementById('modal-add-btn').innerText = t.addToTab;
+            document.getElementById('cart-header-title').innerText = t.cartHeader;
+            document.getElementById('split-label').innerText = t.splitLabel;
+            document.getElementById('split-guests-label').innerText = t.guestsLabel;
+            document.getElementById('per-person-label').innerText = t.perPerson;
+            document.getElementById('total-label').innerText = t.totalLabel;
+            document.getElementById('checkout-btn').innerText = t.checkout;
+            document.getElementById('review-title').innerText = t.reviewTitle;
+            document.getElementById('review-desc').innerText = t.reviewDesc;
+            document.getElementById('review-link-btn').innerText = t.reviewBtn;
+            document.getElementById('review-close-btn').innerText = t.reviewClose;
+
             const container = document.getElementById('menu-container');
+            if (!container) return;
             container.innerHTML = '';
 
-            const categories = { cocktails: '🍸 Craft Cocktails', beers: '🍺 Tap & Craft Beers', bites: '🥨 Bar Bites & Sharables' };
+            const categories = { 
+                cocktails: currentLang === 'sr' ? '🍸 Zanatski Kokteli' : currentLang === 'ru' ? '🍸 Авторские коктейли' : '🍸 Craft Cocktails', 
+                beers: currentLang === 'sr' ? '🍺 Točeno i Zanatsko Pivo' : currentLang === 'ru' ? '🍺 Разливное и крафтовое пиво' : '🍺 Tap & Craft Beers', 
+                bites: currentLang === 'sr' ? '🍺 / 🥨 Zalogaji i Meze' : currentLang === 'ru' ? '🥨 Закуски и снеки' : '🥨 Bar Bites & Sharables' 
+            };
 
             for (const [catKey, catTitle] of Object.entries(categories)) {
                 const catItems = menuData.filter(item => item.cat === catKey && (currentFilter === 'all' || item.tag === currentFilter));
@@ -225,11 +332,11 @@
                                     <span class="font-mono font-bold text-orange-700 text-sm">${formatPrice(item.price)}</span>
                                     ${isAdmin ? `
                                         <button onclick="toggleSoldOut('${item.id}', ${!isSoldOut})" class="px-3 py-1 rounded-lg text-xs font-semibold ${isSoldOut ? 'bg-red-600 text-white' : 'bg-zinc-100 text-zinc-700 border border-zinc-300'}">
-                                            ${isSoldOut ? 'Sold Out 🔴' : 'In Stock 🟢'}
+                                            ${isSoldOut ? t.makeSoldOut : t.inStock}
                                         </button>
                                     ` : `
                                         <button ${isSoldOut ? 'disabled' : ''} onclick="openCustomModal('${item.id}')" class="px-3 py-1.5 rounded-xl text-xs font-bold ${isSoldOut ? 'bg-zinc-100 text-zinc-400 cursor-not-allowed' : 'bg-orange-700 text-white hover:bg-orange-800 shadow-sm'}">
-                                            ${isSoldOut ? 'Sold Out' : '+ Order'}
+                                            ${isSoldOut ? t.soldOut : t.orderBtn}
                                         </button>
                                     `}
                                 </div>
@@ -240,19 +347,23 @@
                 sectionHtml += `</div></div>`;
                 container.innerHTML += sectionHtml;
             }
-        }
+        };
 
-        // Language & Currency Handlers
-        window.changeLanguage = function(lang) { currentLang = lang; renderMenu(); };
-        window.changeCurrency = function(curr) { currentCurr = curr; renderMenu(); updateCartUI(); };
+        window.changeLanguage = function(lang) { 
+            currentLang = lang; 
+            renderMenu(); 
+            updateCartUI();
+        };
+
         window.filterMenu = function(filter) {
             currentFilter = filter;
             document.querySelectorAll('.filter-btn').forEach(btn => btn.className = "filter-btn px-3.5 py-1.5 bg-zinc-200/70 text-zinc-700 text-xs rounded-full hover:bg-zinc-300/70 transition");
-            event.target.className = "filter-btn px-3.5 py-1.5 bg-orange-700 text-white font-medium text-xs rounded-full shadow-sm transition";
+            if (event && event.target) {
+                event.target.className = "filter-btn px-3.5 py-1.5 bg-orange-700 text-white font-medium text-xs rounded-full shadow-sm transition";
+            }
             renderMenu();
         };
 
-        // Modal Controls
         window.openCustomModal = function(id) {
             selectedItemForModal = menuData.find(i => i.id === id);
             document.getElementById('modal-item-name').innerText = selectedItemForModal.name[currentLang];
@@ -262,7 +373,6 @@
         };
         window.closeModal = function() { document.getElementById('custom-modal').classList.add('hidden'); };
 
-        // Firebase Sync Listeners
         onValue(ref(db, `tables/table_${tableId}/cart`), (snapshot) => {
             cartItems = snapshot.val() || {};
             updateCartUI();
@@ -281,7 +391,7 @@
             const cartKey = `${selectedItemForModal.id}_${Date.now()}`;
             cartItems[cartKey] = {
                 id: selectedItemForModal.id,
-                name: selectedItemForModal.name.en,
+                name: selectedItemForModal.name[currentLang],
                 price: selectedItemForModal.price,
                 notes: notes,
                 qty: 1
@@ -292,6 +402,7 @@
 
         window.updateCartUI = function() {
             const listEl = document.getElementById('cart-items-list');
+            if (!listEl) return;
             listEl.innerHTML = '';
             let total = 0;
             let count = 0;
@@ -303,7 +414,7 @@
                     <div class="py-3 flex items-center justify-between">
                         <div>
                             <h4 class="font-bold text-xs text-zinc-900">${item.name}</h4>
-                            ${item.notes ? `<p class="text-[10px] text-orange-700 font-medium">Note: ${item.notes}</p>` : ''}
+                            ${item.notes ? `<p class="text-[10px] text-orange-700 font-medium">Napomena / Note: ${item.notes}</p>` : ''}
                             <span class="font-mono text-xs text-zinc-500">${formatPrice(item.price)}</span>
                         </div>
                         <div class="flex items-center space-x-2">
@@ -344,7 +455,7 @@
         window.closeCart = function() { document.getElementById('cart-modal').classList.add('hidden'); };
 
         window.placeOrder = function() {
-            if (Object.keys(cartItems).length === 0) return alert('Your tab is empty!');
+            if (Object.keys(cartItems).length === 0) return alert(currentLang === 'sr' ? 'Vaš račun je prazan!' : currentLang === 'ru' ? 'Ваш счёт пуст!' : 'Your tab is empty!');
             const ordersRef = ref(db, 'orders');
             const newOrderRef = push(ordersRef);
             
@@ -367,7 +478,7 @@
         window.callWaiter = function() {
             const waiterRef = ref(db, `tables/table_${tableId}/waiterCall`);
             set(waiterRef, { timestamp: Date.now(), status: 'pending' }).then(() => {
-                alert('Bartender notified! 🍸');
+                alert(currentLang === 'sr' ? 'Barmen je obavešten! 🍸' : currentLang === 'ru' ? 'Бармен оповещён! 🍸' : 'Bartender notified! 🍸');
             });
         };
 
@@ -375,7 +486,7 @@
             update(ref(db, 'soldOut'), { [itemId]: status });
         };
 
-        // Initial render trigger
+        // Render immediately on load
         renderMenu();
     </script>
 </body>
