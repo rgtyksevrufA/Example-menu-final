@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bar & Lounge Menu</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-[#FAF9F5] text-zinc-800 font-sans antialiased pb-24">
+
+    <!-- Top Header Bar -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-zinc-200/80 px-4 py-3.5 flex items-center justify-between shadow-sm">
+        <div class="flex items-center space-x-2.5">
+            <span class="text-2xl">🍸</span>
+            <div>
+                <h1 id="brand-title" class="font-bold text-base tracking-wider text-zinc-900 uppercase">THE APOTHECARY BAR</h1>
+                <p id="table-indicator" class="text-xs text-orange-700 font-semibold">Table: Loading...</p>
+            </div>
+        </div>
+        
+        <!-- Controls: Language & Currency -->
+        <div class="flex items-center space-x-2">
+            <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-[#FAF9F5] text-xs text-zinc-800 border border-zinc-300 rounded-lg px-2 py-1 focus:outline-none">
+                <option value="en">EN</option>
+                <option value="ja">日本語</option>
+                <option value="tr">TR</option>
+            </select>
+            <select id="curr-select" onchange="changeCurrency(this.value)" class="bg-[#FAF9F5] text-xs text-zinc-800 border border-zinc-300 rounded-lg px-2 py-1 focus:outline-none">
+                <option value="USD">$ USD</option>
+                <option value="EUR">€ EUR</option>
+                <option value="TRY">₺ TRY</option>
+            </select>
+        </div>
+    </header>
+
+    <!-- Category / Filter Pills -->
+    <div class="px-4 py-3 overflow-x-auto whitespace-nowrap scrollbar-none border-b border-zinc-200/60 bg-white/40 flex space-x-2">
+        <button onclick="filterMenu('all')" class="filter-btn px-3.5 py-1.5 bg-orange-700 text-white font-medium text-xs rounded-full shadow-sm transition">All Drinks & Eats</button>
+        <button onclick="filterMenu('cocktail')" class="filter-btn px-3.5 py-1.5 bg-zinc-200/70 text-zinc-700 text-xs rounded-full hover:bg-zinc-300/70 transition">Signature Cocktails 🍹</button>
+        <button onclick="filterMenu('craft')" class="filter-btn px-3.5 py-1.5 bg-zinc-200/70 text-zinc-700 text-xs rounded-full hover:bg-zinc-300/70 transition">Craft Beers 🍺</button>
+        <button onclick="filterMenu('bites')" class="filter-btn px-3.5 py-1.5 bg-zinc-200/70 text-zinc-700 text-xs rounded-full hover:bg-zinc-300/70 transition">Bar Bites 🥨</button>
+    </div>
+
+    <!-- Main Menu Container -->
+    <main class="max-w-md mx-auto p-4 space-y-6" id="menu-container">
+        <!-- Dynamic Menu Items Injected Here -->
+    </main>
+
+    <!-- Floating Action Bar (Cart & Call Waiter) -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-zinc-200/80 p-4 max-w-md mx-auto flex items-center justify-between z-40 shadow-lg">
+        <button onclick="callWaiter()" class="bg-[#FAF9F5] hover:bg-zinc-100 text-orange-700 border border-zinc-300 px-4 py-2.5 rounded-xl font-medium text-xs flex items-center space-x-2 transition">
+            <i class="fa-solid fa-bell"></i>
+            <span id="call-waiter-text">Call Bartender</span>
+        </button>
+        
+        <button onclick="openCart()" class="bg-orange-700 hover:bg-orange-800 text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center space-x-3 shadow-md shadow-orange-700/20 transition">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cart-btn-text">View Tab</span>
+            <span id="cart-count" class="bg-white text-orange-700 text-xs px-2 py-0.5 rounded-full font-mono font-bold">0</span>
+        </button>
+    </div>
+
+    <!-- Customization Modal -->
+    <div id="custom-modal" class="fixed inset-0 bg-zinc-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white border border-zinc-200 w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 id="modal-item-name" class="font-bold text-lg text-zinc-900"></h3>
+                <button onclick="closeModal()" class="text-zinc-400 hover:text-zinc-700"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <p id="modal-item-desc" class="text-xs text-zinc-500"></p>
+            
+            <div class="space-y-2">
+                <label class="text-xs font-semibold text-zinc-700 uppercase tracking-wider">Special Instructions / Modifiers</label>
+                <input type="text" id="modal-notes" placeholder="e.g. Extra ice, low sugar, extra lime..." class="w-full bg-[#FAF9F5] border border-zinc-300 rounded-lg p-2.5 text-xs text-zinc-900 focus:outline-none focus:border-orange-700">
+            </div>
+
+            <button onclick="confirmAddToCart()" class="w-full bg-orange-700 hover:bg-orange-800 text-white font-bold py-3 rounded-xl text-sm shadow-md transition">
+                Add to Table Tab
+            </button>
+        </div>
+    </div>
+
+    <!-- Cart & Split Bill Modal -->
+    <div id="cart-modal" class="fixed inset-0 bg-zinc-900/40 backdrop-blur-sm z-50 hidden flex flex-col justify-end">
+        <div class="bg-white border-t border-zinc-200 rounded-t-3xl p-5 max-w-md w-full mx-auto max-h-[85vh] flex flex-col shadow-2xl">
+            <div class="flex justify-between items-center pb-4 border-b border-zinc-200">
+                <h2 class="font-bold text-base flex items-center space-x-2 text-zinc-900">
+                    <i class="fa-solid fa-receipt text-orange-700"></i>
+                    <span id="cart-header-title">Table Running Tab</span>
+                </h2>
+                <button onclick="closeCart()" class="text-zinc-400 hover:text-zinc-700"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <!-- Cart Items List -->
+            <div id="cart-items-list" class="py-4 space-y-3 overflow-y-auto flex-1 divide-y divide-zinc-100">
+                <!-- Injected via JS -->
+            </div>
+
+            <!-- Split Bill Calculator Box -->
+            <div class="bg-[#FAF9F5] rounded-xl p-3 border border-zinc-200 my-2 space-y-2">
+                <div class="flex justify-between items-center text-xs">
+                    <span id="split-label" class="text-zinc-500">Split Bill Calculator:</span>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="adjustSplit(-1)" class="w-6 h-6 bg-zinc-200 text-zinc-800 rounded font-bold hover:bg-zinc-300">-</button>
+                        <span id="split-count" class="font-mono font-bold text-orange-700">1</span> <span class="text-zinc-500">guests</span>
+                        <button onclick="adjustSplit(1)" class="w-6 h-6 bg-zinc-200 text-zinc-800 rounded font-bold hover:bg-zinc-300">+</button>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center text-xs font-semibold pt-1 border-t border-zinc-200">
+                    <span id="per-person-label" class="text-zinc-700">Per Person:</span>
+                    <span id="split-per-person-amount" class="font-mono text-orange-700">$0</span>
+                </div>
+            </div>
+
+            <!-- Total & Checkout -->
+            <div class="pt-3 border-t border-zinc-200 space-y-3">
+                <div class="flex justify-between items-center font-bold text-sm text-zinc-900">
+                    <span>Total Tab:</span>
+                    <span id="cart-total-amount" class="text-orange-700 font-mono text-base">$0</span>
+                </div>
+                <button onclick="placeOrder()" class="w-full bg-orange-700 hover:bg-orange-800 text-white font-bold py-3 rounded-xl text-sm shadow-md transition">
+                    Send Order to Bar 🥂
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Maps Review Prompt Modal -->
+    <div id="review-modal" class="fixed inset-0 bg-zinc-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white border border-zinc-200 w-full max-w-sm rounded-2xl p-6 text-center space-y-4 shadow-2xl">
+            <span class="text-4xl">⭐</span>
+            <h3 class="font-bold text-lg text-zinc-900">Enjoying your night?</h3>
+            <p class="text-xs text-zinc-500">If you loved the drinks and atmosphere, leave us a quick review on Google!</p>
+            <div class="space-y-2 pt-2">
+                <a href="https://maps.google.com" target="_blank" class="block w-full bg-orange-700 hover:bg-orange-800 text-white font-bold py-3 rounded-xl text-xs shadow-md transition">
+                    Leave a Google Review 🌟
+                </a>
+                <button onclick="closeReviewModal()" class="w-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-medium py-2.5 rounded-xl text-xs transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue, push, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.app.js";
+
+        // ==========================================
+        // FIREBASE CONFIGURATION
+        // ==========================================
+        const firebaseConfig = {
+          apiKey: "AIzaSyArFtfAitFwuy13dvqAGu_GgnSA4cGYBIk",
+          authDomain: "example-website-menu.firebaseapp.com",
+          databaseURL: "https://example-website-menu-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId: "example-website-menu",
+          storageBucket: "example-website-menu.firebasestorage.app",
+          messagingSenderId: "52865172702",
+          appId: "1:52865172702:web:6512c66c4f6530665c2e4f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // State Management
+        const urlParams = new URLSearchParams(window.location.search);
+        const tableId = urlParams.get('table') || '1';
+        const isAdmin = urlParams.get('admin') === 'secret';
+        
+        document.getElementById('table-indicator').innerText = isAdmin ? "🔧 ADMIN MODE (Stock Control)" : `Table: #${tableId}`;
+
+        let currentLang = 'en';
+        let currentCurr = 'USD';
+        let currentFilter = 'all';
+        let splitCount = 1;
+        let selectedItemForModal = null;
+        let cartItems = {};
+        let soldOutItems = {};
+
+        // Modern Bar Menu Data Store
+        const menuData = [
+            { id: 'b1', cat: 'cocktails', tag: 'cocktail', name: { en: 'Smoked Old Fashioned', ja: 'スモーク・オールドファッションed', tr: 'İsli Old Fashioned' }, price: 15, desc: { en: 'Bourbon, aromatic bitters, orange peel, angostura', ja: 'バーボン、ビターズ、オレンジピール', tr: 'Burbon viski, aromatik bitter, portakal kabuğu' }, img: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&auto=format&fit=crop&q=60' },
+            { id: 'b2', cat: 'cocktails', tag: 'cocktail', name: { en: 'Spicy Espresso Martini', ja: 'スパイス・エスプレッソマティーニ', tr: 'Baharatlı Espresso Martini' }, price: 16, desc: { en: 'Vodka, fresh espresso, coffee liqueur, chili rim', ja: 'ウォッカ、生エスプレッソ、コーヒーリキュール', tr: 'Votka, taze espresso, kahve likörü' }, img: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&auto=format&fit=crop&q=60' },
+            { id: 'b3', cat: 'beers', tag: 'craft', name: { en: 'Hazy IPA (Pint)', ja: 'ヘイジーIPA', tr: 'Hazy IPA Bira' }, price: 8, desc: { en: 'Citrusy, tropical double dry-hopped craft IPA', ja: 'トロピカルな香りのクラフトビール', tr: 'Narenciye aromalı zengin craft bira' }, img: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&auto=format&fit=crop&q=60' },
+            { id: 'b4', cat: 'beers', tag: 'craft', name: { en: 'Crisp Belgian Witbier', ja: 'ベルジャン・ホワイト', tr: 'Belçika Buğday Birası' }, price: 7, desc: { en: 'Wheat beer brewed with coriander and orange peel', ja: 'コリアンダーとオレンジピールの小麦ビール', tr: 'Kişniş ve portakal kabuklu buğday birası' }, img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&auto=format&fit=crop&q=60' },
+            { id: 'b5', cat: 'bites', tag: 'bites', name: { en: 'Truffle Parmesan Fries', ja: 'トリュフ・フライドポテト', tr: 'Trüflü Parmesanlı Patates' }, price: 10, desc: { en: 'Hand-cut fries, white truffle oil, shaved parmesan', ja: 'トリュフオイルとパルミジャーノチーズ', tr: 'El kesimi patates, beyaz trüf yağı, parmesan' }, img: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=400&auto=format&fit=crop&q=60' },
+            { id: 'b6', cat: 'bites', tag: 'bites', name: { en: 'Artisan Cheese & Charcuterie', ja: 'チーズ＆シャルキュトリ板', tr: 'Peynir ve Şarküteri Tabağı' }, price: 22, desc: { en: 'Cured meats, aged cheeses, fig jam, toasted crostini', ja: '熟成チーズとサラミ、イチジクジャムのセット', tr: 'Kurutulmuş etler, olgunlaştırılmış peynirler, kıtır ekmek' }, img: 'https://images.unsplash.com/photo-1541529086526-db283c563270?w=400&auto=format&fit=crop&q=60' }
+        ];
+
+        // Currency Exchange Rates (Base USD)
+        const exchangeRates = { USD: 1, EUR: 0.92, TRY: 34.0 };
+        const currencySymbols = { USD: '$', EUR: '€', TRY: '₺' };
+
+        function formatPrice(usdPrice) {
+            const converted = usdPrice * exchangeRates[currentCurr];
+            return `${currencySymbols[currentCurr]}${Math.round(converted)}`;
+        }
+
+        // Render Menu
+        window.renderMenu = function() {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+
+            const categories = { cocktails: '🍸 Craft Cocktails', beers: '🍺 Tap & Craft Beers', bites: '🥨 Bar Bites & Sharables' };
+
+            for (const [catKey, catTitle] of Object.entries(categories)) {
+                const catItems = menuData.filter(item => item.cat === catKey && (currentFilter === 'all' || item.tag === currentFilter));
+                if (catItems.length === 0) continue;
+
+                let sectionHtml = `<div class="space-y-3"><h2 class="font-bold text-xs text-orange-700 uppercase tracking-wider">${catTitle}</h2><div class="space-y-3">`;
+
+                catItems.forEach(item => {
+                    const isSoldOut = soldOutItems[item.id] || false;
+                    sectionHtml += `
+                        <div class="bg-white border ${isSoldOut ? 'border-red-200 opacity-60' : 'border-zinc-200/80'} rounded-2xl p-3.5 flex items-center justify-between space-x-3.5 shadow-sm">
+                            <img src="${item.img}" class="w-20 h-20 rounded-xl object-cover" alt="${item.name.en}">
+                            <div class="flex-1 min-w-0">
+                                <h3 class="font-bold text-sm text-zinc-900 truncate">${item.name[currentLang]}</h3>
+                                <p class="text-xs text-zinc-500 line-clamp-1 mt-0.5">${item.desc[currentLang]}</p>
+                                <div class="flex items-center justify-between mt-2.5">
+                                    <span class="font-mono font-bold text-orange-700 text-sm">${formatPrice(item.price)}</span>
+                                    ${isAdmin ? `
+                                        <button onclick="toggleSoldOut('${item.id}', ${!isSoldOut})" class="px-3 py-1 rounded-lg text-xs font-semibold ${isSoldOut ? 'bg-red-600 text-white' : 'bg-zinc-100 text-zinc-700 border border-zinc-300'}">
+                                            ${isSoldOut ? 'Sold Out 🔴' : 'In Stock 🟢'}
+                                        </button>
+                                    ` : `
+                                        <button ${isSoldOut ? 'disabled' : ''} onclick="openCustomModal('${item.id}')" class="px-3 py-1.5 rounded-xl text-xs font-bold ${isSoldOut ? 'bg-zinc-100 text-zinc-400 cursor-not-allowed' : 'bg-orange-700 text-white hover:bg-orange-800 shadow-sm'}">
+                                            ${isSoldOut ? 'Sold Out' : '+ Order'}
+                                        </button>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                sectionHtml += `</div></div>`;
+                container.innerHTML += sectionHtml;
+            }
+        }
+
+        // Language & Currency Handlers
+        window.changeLanguage = function(lang) { currentLang = lang; renderMenu(); };
+        window.changeCurrency = function(curr) { currentCurr = curr; renderMenu(); updateCartUI(); };
+        window.filterMenu = function(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.className = "filter-btn px-3.5 py-1.5 bg-zinc-200/70 text-zinc-700 text-xs rounded-full hover:bg-zinc-300/70 transition");
+            event.target.className = "filter-btn px-3.5 py-1.5 bg-orange-700 text-white font-medium text-xs rounded-full shadow-sm transition";
+            renderMenu();
+        };
+
+        // Modal Controls
+        window.openCustomModal = function(id) {
+            selectedItemForModal = menuData.find(i => i.id === id);
+            document.getElementById('modal-item-name').innerText = selectedItemForModal.name[currentLang];
+            document.getElementById('modal-item-desc').innerText = selectedItemForModal.desc[currentLang];
+            document.getElementById('modal-notes').value = '';
+            document.getElementById('custom-modal').classList.remove('hidden');
+        };
+        window.closeModal = function() { document.getElementById('custom-modal').classList.add('hidden'); };
+
+        // Firebase Sync Listeners
+        onValue(ref(db, `tables/table_${tableId}/cart`), (snapshot) => {
+            cartItems = snapshot.val() || {};
+            updateCartUI();
+        });
+
+        onValue(ref(db, 'soldOut'), (snapshot) => {
+            soldOutItems = snapshot.val() || {};
+            renderMenu();
+        });
+
+        window.confirmAddToCart = function() {
+            if (!selectedItemForModal) return;
+            const notes = document.getElementById('modal-notes').value;
+            const cartRef = ref(db, `tables/table_${tableId}/cart`);
+            
+            const cartKey = `${selectedItemForModal.id}_${Date.now()}`;
+            cartItems[cartKey] = {
+                id: selectedItemForModal.id,
+                name: selectedItemForModal.name.en,
+                price: selectedItemForModal.price,
+                notes: notes,
+                qty: 1
+            };
+            set(cartRef, cartItems);
+            closeModal();
+        };
+
+        window.updateCartUI = function() {
+            const listEl = document.getElementById('cart-items-list');
+            listEl.innerHTML = '';
+            let total = 0;
+            let count = 0;
+
+            for (const [key, item] of Object.entries(cartItems)) {
+                total += item.price * item.qty;
+                count += item.qty;
+                listEl.innerHTML += `
+                    <div class="py-3 flex items-center justify-between">
+                        <div>
+                            <h4 class="font-bold text-xs text-zinc-900">${item.name}</h4>
+                            ${item.notes ? `<p class="text-[10px] text-orange-700 font-medium">Note: ${item.notes}</p>` : ''}
+                            <span class="font-mono text-xs text-zinc-500">${formatPrice(item.price)}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="updateQty('${key}', -1)" class="w-6 h-6 bg-zinc-200 text-zinc-800 rounded text-xs font-bold hover:bg-zinc-300">-</button>
+                            <span class="font-mono text-xs font-semibold">${item.qty}</span>
+                            <button onclick="updateQty('${key}', 1)" class="w-6 h-6 bg-zinc-200 text-zinc-800 rounded text-xs font-bold hover:bg-zinc-300">+</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('cart-count').innerText = count;
+            document.getElementById('cart-total-amount').innerText = formatPrice(total);
+            updateSplitBill(total);
+        };
+
+        window.updateQty = function(key, delta) {
+            if (cartItems[key]) {
+                cartItems[key].qty += delta;
+                if (cartItems[key].qty <= 0) delete cartItems[key];
+                set(ref(db, `tables/table_${tableId}/cart`), cartItems);
+            }
+        };
+
+        window.adjustSplit = function(delta) {
+            splitCount = Math.max(1, splitCount + delta);
+            document.getElementById('split-count').innerText = splitCount;
+            let total = Object.values(cartItems).reduce((acc, item) => acc + (item.price * item.qty), 0);
+            updateSplitBill(total);
+        };
+
+        window.updateSplitBill = function(total) {
+            const perPerson = total / splitCount;
+            document.getElementById('split-per-person-amount').innerText = formatPrice(perPerson);
+        };
+
+        window.openCart = function() { document.getElementById('cart-modal').classList.remove('hidden'); };
+        window.closeCart = function() { document.getElementById('cart-modal').classList.add('hidden'); };
+
+        window.placeOrder = function() {
+            if (Object.keys(cartItems).length === 0) return alert('Your tab is empty!');
+            const ordersRef = ref(db, 'orders');
+            const newOrderRef = push(ordersRef);
+            
+            set(newOrderRef, {
+                table: tableId,
+                items: cartItems,
+                timestamp: Date.now(),
+                status: 'pending'
+            }).then(() => {
+                set(ref(db, `tables/table_${tableId}/cart`), null);
+                closeCart();
+                document.getElementById('review-modal').classList.remove('hidden');
+            });
+        };
+
+        window.closeReviewModal = function() {
+            document.getElementById('review-modal').classList.add('hidden');
+        };
+
+        window.callWaiter = function() {
+            const waiterRef = ref(db, `tables/table_${tableId}/waiterCall`);
+            set(waiterRef, { timestamp: Date.now(), status: 'pending' }).then(() => {
+                alert('Bartender notified! 🍸');
+            });
+        };
+
+        window.toggleSoldOut = function(itemId, status) {
+            update(ref(db, 'soldOut'), { [itemId]: status });
+        };
+
+        // Initial render trigger
+        renderMenu();
+    </script>
+</body>
+</html>

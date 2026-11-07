@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bar & KDS Display</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-[#FAF9F5] text-zinc-800 font-sans antialiased p-6">
+
+    <!-- Header -->
+    <header class="flex justify-between items-center border-b border-zinc-200/80 pb-4 mb-6 bg-white px-6 py-4 rounded-2xl shadow-sm">
+        <div class="flex items-center space-x-3">
+            <span class="text-3xl">🍸</span>
+            <div>
+                <h1 class="font-bold text-lg tracking-wider text-zinc-900 uppercase">BAR DISPLAY SYSTEM</h1>
+                <p class="text-xs text-zinc-500">Live Ticket Stream</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span id="active-tickets-count" class="bg-orange-50 text-orange-800 border border-orange-200 text-xs font-bold px-3.5 py-1.5 rounded-full">
+                0 Active Orders
+            </span>
+        </div>
+    </header>
+
+    <!-- Waiter Alerts Banner Container -->
+    <div id="waiter-alerts" class="mb-6 space-y-2">
+        <!-- Injected dynamically when a customer calls the bartender -->
+    </div>
+
+    <!-- Active Orders Grid -->
+    <main id="orders-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <!-- Live Order Cards Injected Here -->
+    </main>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.app.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyArFtfAitFwuy13dvqAGu_GgnSA4cGYBIk",
+          authDomain: "example-website-menu.firebaseapp.com",
+          databaseURL: "https://example-website-menu-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId: "example-website-menu",
+          storageBucket: "example-website-menu.firebasestorage.app",
+          messagingSenderId: "52865172702",
+          appId: "1:52865172702:web:6512c66c4f6530665c2e4f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Listen for Incoming Orders
+        onValue(ref(db, 'orders'), (snapshot) => {
+            const orders = snapshot.val() || {};
+            const grid = document.getElementById('orders-grid');
+            grid.innerHTML = '';
+            
+            const activeKeys = Object.keys(orders).filter(k => orders[k].status !== 'completed');
+            document.getElementById('active-tickets-count').innerText = `${activeKeys.length} Active Orders`;
+
+            if (activeKeys.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-16 text-center border border-dashed border-zinc-300 bg-white rounded-2xl shadow-sm">
+                        <i class="fa-solid fa-martini-glass-empty text-3xl text-zinc-400 mb-2"></i>
+                        <p class="text-sm text-zinc-500 font-medium">No pending drink orders right now.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            for (const [orderId, order] of Object.entries(orders)) {
+                if (order.status === 'completed') continue;
+
+                const timeAgo = Math.floor((Date.now() - order.timestamp) / 60000);
+                
+                let itemsHtml = '';
+                for (const item of Object.values(order.items || {})) {
+                    itemsHtml += `
+                        <div class="flex justify-between items-start text-xs border-b border-zinc-100 py-1.5">
+                            <div>
+                                <span class="font-bold text-zinc-900">${item.qty}x</span> 
+                                <span class="text-zinc-700">${item.name}</span>
+                                ${item.notes ? `<p class="text-[10px] text-orange-700 font-semibold">↳ Note: ${item.notes}</p>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                grid.innerHTML += `
+                    <div class="bg-white border border-zinc-200 rounded-2xl p-4 flex flex-col justify-between space-y-4 shadow-sm">
+                        <div>
+                            <div class="flex justify-between items-center pb-2 border-b border-zinc-200">
+                                <span class="font-bold text-orange-700 text-base">Table #${order.table}</span>
+                                <span class="text-[10px] font-mono bg-[#FAF9F5] text-zinc-600 px-2 py-0.5 rounded border border-zinc-200/60">${timeAgo}m ago</span>
+                            </div>
+                            <div class="py-2 space-y-1">
+                                ${itemsHtml}
+                            </div>
+                        </div>
+                        <button onclick="completeOrder('${orderId}')" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold py-2.5 rounded-xl text-xs transition">
+                            Mark Served ✓
+                        </button>
+                    </div>
+                `;
+            }
+        });
+
+        // Listen for Bartender Calls
+        onValue(ref(db, 'tables'), (snapshot) => {
+            const tables = snapshot.val() || {};
+            const alertsContainer = document.getElementById('waiter-alerts');
+            alertsContainer.innerHTML = '';
+
+            for (const [tblKey, tblData] of Object.entries(tables)) {
+                if (tblData.waiterCall && tblData.waiterCall.status === 'pending') {
+                    const tableNum = tblKey.replace('table_', '');
+                    alertsContainer.innerHTML += `
+                        <div class="bg-orange-50 border border-orange-200 text-orange-900 p-3.5 rounded-xl flex items-center justify-between text-xs font-semibold shadow-sm">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-bell animate-bounce text-orange-700"></i>
+                                <span>Table #${tableNum} requested assistance!</span>
+                            </div>
+                            <button onclick="clearCall('${tblKey}')" class="bg-orange-700 hover:bg-orange-800 text-white px-3 py-1 rounded-lg text-xs font-bold transition">
+                                Dismiss
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        });
+
+        window.completeOrder = function(orderId) {
+            update(ref(db, `orders/${orderId}`), { status: 'completed' });
+        };
+
+        window.clearCall = function(tableKey) {
+            remove(ref(db, `tables/${tableKey}/waiterCall`));
+        };
+    </script>
+</body>
+</html>
