@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,7 +21,7 @@
             </div>
         </div>
         
-        <!-- Language Selector Only (Serbian default, English, Russian) -->
+        <!-- Language Selector (Serbian default, English, Russian) -->
         <div class="flex items-center space-x-2">
             <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-[#FAF9F5] text-xs text-zinc-800 border border-zinc-300 rounded-lg px-2.5 py-1.5 focus:outline-none font-medium">
                 <option value="sr" selected>SR</option>
@@ -48,7 +48,7 @@
     <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-zinc-200/80 p-4 max-w-md mx-auto flex items-center justify-between z-40 shadow-lg">
         <button onclick="callWaiter()" id="call-waiter-btn" class="bg-[#FAF9F5] hover:bg-zinc-100 text-orange-700 border border-zinc-300 px-4 py-2.5 rounded-xl font-medium text-xs flex items-center space-x-2 transition">
             <i class="fa-solid fa-bell"></i>
-            <span>Pozovi Barmena</span>
+            <span id="call-waiter-text-inner">Pozovi Barmena</span>
         </button>
         
         <button onclick="openCart()" id="view-tab-btn" class="bg-orange-700 hover:bg-orange-800 text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center space-x-3 shadow-md shadow-orange-700/20 transition">
@@ -145,9 +145,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, onValue, push, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.app.js";
 
-        // ==========================================
-        // FIREBASE CONFIGURATION
-        // ==========================================
         const firebaseConfig = {
           apiKey: "AIzaSyArFtfAitFwuy13dvqAGu_GgnSA4cGYBIk",
           authDomain: "example-website-menu.firebaseapp.com",
@@ -161,30 +158,28 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // State Management
         const urlParams = new URLSearchParams(window.location.search);
         const tableId = urlParams.get('table') || '1';
         const isAdmin = urlParams.get('admin') === 'secret';
         
-        let currentLang = 'sr'; // Serbian by default
+        let currentLang = 'sr';
         let currentFilter = 'all';
         let splitCount = 1;
         let selectedItemForModal = null;
         let cartItems = {};
         let soldOutItems = {};
 
-        // UI Translation Dictionary
         const uiText = {
             sr: {
-                table: isAdmin ? "🔧 ADMIN REŽIM (Kontrola zaliha)" : `Sto: #${tableId}`,
+                table: isAdmin ? "🔧 ADMIN REŽIM" : `Sto: #${tableId}`,
                 allCat: "Sve Piće i Hrana",
                 cocktailCat: "Kokteli 🍹",
                 craftCat: "Zanatsko Pivo 🍺",
                 bitesCat: "Zalogaji 🥨",
                 callWaiter: "Pozovi Barmena",
                 viewTab: "Pregled Računa",
-                noteLabel: "Posebne Napomene / Izmene",
-                notePlaceholder: "npr. Više leda, manje šećera...",
+                noteLabel: "Posebne Napomene",
+                notePlaceholder: "npr. Više leda...",
                 addToTab: "Dodaj na sto",
                 cartHeader: "Trenutni Račun Stola",
                 splitLabel: "Deljenje računa:",
@@ -192,126 +187,100 @@
                 perPerson: "Po osobi:",
                 totalLabel: "Ukupan Račun:",
                 checkout: "Pošalji porudžbinu šanku 🥂",
-                reviewTitle: "Kako provodite večeras?",
-                reviewDesc: "Ako vam se sviđa atmosfera i piće, ostavite nam kratku ocenu na Google-u!",
-                reviewBtn: "Ostavi Google Recenziju 🌟",
-                reviewClose: "Zatvori",
-                soldOut: "Rasprodato",
-                inStock: "Dostupno 🟢",
-                makeSoldOut: "Rasprodato 🔴",
                 orderBtn: "+ Poruči",
-                adminNotice: "REŽIM KONTROLE",
-                waiterAlert: "zatražio asistenciju!",
-                dismiss: "Ukloni"
+                soldOut: "Rasprodato",
+                inStock: "Dostupno",
+                makeSoldOut: "Rasprodato 🔴"
             },
             en: {
-                table: isAdmin ? "🔧 ADMIN MODE (Stock Control)" : `Table: #${tableId}`,
+                table: isAdmin ? "🔧 ADMIN MODE" : `Table: #${tableId}`,
                 allCat: "All Drinks & Eats",
-                cocktailCat: "Signature Cocktails 🍹",
+                cocktailCat: "Cocktails 🍹",
                 craftCat: "Craft Beers 🍺",
                 bitesCat: "Bar Bites 🥨",
                 callWaiter: "Call Bartender",
                 viewTab: "View Tab",
-                noteLabel: "Special Instructions / Modifiers",
-                notePlaceholder: "e.g. Extra ice, low sugar...",
+                noteLabel: "Special Instructions",
+                notePlaceholder: "e.g. Extra ice...",
                 addToTab: "Add to Table Tab",
                 cartHeader: "Table Running Tab",
-                splitLabel: "Split Bill Calculator:",
+                splitLabel: "Split Bill:",
                 guestsLabel: "guests",
                 perPerson: "Per Person:",
-                totalLabel: "Total Tab:",
+                totalLabel: "Total:",
                 checkout: "Send Order to Bar 🥂",
-                reviewTitle: "Enjoying your night?",
-                reviewDesc: "If you loved the drinks and atmosphere, leave us a quick review on Google!",
-                reviewBtn: "Leave a Google Review 🌟",
-                reviewClose: "Close",
-                soldOut: "Sold Out",
-                inStock: "In Stock 🟢",
-                makeSoldOut: "Sold Out 🔴",
                 orderBtn: "+ Order",
-                adminNotice: "STOCK CONTROL",
-                waiterAlert: "requested assistance!",
-                dismiss: "Dismiss"
+                soldOut: "Sold Out",
+                inStock: "In Stock",
+                makeSoldOut: "Sold Out 🔴"
             },
             ru: {
-                table: isAdmin ? "🔧 РЕЖИМ АДМИНА (Склад)" : `Стол: #${tableId}`,
+                table: isAdmin ? "🔧 РЕЖИМ АДМИНА" : `Стол: #${tableId}`,
                 allCat: "Всё меню",
                 cocktailCat: "Коктейли 🍹",
-                craftCat: "Крафтовое пиво 🍺",
+                craftCat: "Крафт 🍺",
                 bitesCat: "Закуски 🥨",
                 callWaiter: "Зов бармена",
-                viewTab: "Счёт стола",
-                noteLabel: "Особые пожелания / Замечания",
-                notePlaceholder: "напр. Больше льда, меньше сахара...",
+                viewTab: "Счёт",
+                noteLabel: "Пожелания",
+                notePlaceholder: "напр. Больше льда...",
                 addToTab: "Добавить в счёт",
-                cartHeader: "Текущий счёт стола",
-                splitLabel: "Разделить счёт:",
+                cartHeader: "Счёт стола",
+                splitLabel: "Разделить:",
                 guestsLabel: "гостей",
                 perPerson: "С человека:",
                 totalLabel: "Итого:",
-                checkout: "Отправить заказ в бар 🥂",
-                reviewTitle: "Вам всё нравится?",
-                reviewDesc: "Если вам понравились наши напитки и атмосфера, оставьте отзыв в Google!",
-                reviewBtn: "Оставить отзыв в Google 🌟",
-                reviewClose: "Закрыть",
-                soldOut: "Нет в наличии",
-                inStock: "В наличии 🟢",
-                makeSoldOut: "Распродано 🔴",
+                checkout: "Отправить заказ 🥂",
                 orderBtn: "+ Заказать",
-                adminNotice: "УПРАВЛЕНИЕ СКЛАДОМ",
-                waiterAlert: "просит подойти!",
-                dismiss: "Скрыть"
+                soldOut: "Нет",
+                inStock: "В наличии",
+                makeSoldOut: "Распродано 🔴"
             }
         };
 
-        // Modern Bar Menu Data Store (Prices in RSD)
         const menuData = [
-            { id: 'b1', cat: 'cocktails', tag: 'cocktail', name: { sr: 'Smoked Old Fashioned', en: 'Smoked Old Fashioned', ru: 'Смоoked Old Fashioned' }, price: 1200, desc: { sr: 'Burbon, aromatični bitter, kora pomorandže, angostura', en: 'Bourbon, aromatic bitters, orange peel, angostura', ru: 'Бурбон, биттер, цедра апельсина' }, img: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&auto=format&fit=crop&q=60' },
-            { id: 'b2', cat: 'cocktails', tag: 'cocktail', name: { sr: 'Spicy Espresso Martini', en: 'Spicy Espresso Martini', ru: 'Пряный Эспрессо Мартини' }, price: 1350, desc: { sr: 'Vodka, sveži espresso, liker od kafe, ivica od čilija', en: 'Vodka, fresh espresso, coffee liqueur, chili rim', ru: 'Водка, свежий эспрессо, кофейный ликер, чили' }, img: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&auto=format&fit=crop&q=60' },
-            { id: 'b3', cat: 'beers', tag: 'craft', name: { sr: 'Hazy IPA (Pinta)', en: 'Hazy IPA (Pint)', ru: 'Hazy IPA (Пинта)' }, price: 650, desc: { sr: 'Citrusno, tropsko zanatsko pivo sa duplim hmeljenjem', en: 'Citrusy, tropical double dry-hopped craft IPA', ru: 'Цитрусовый, тропический крафтовый IPA' }, img: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&auto=format&fit=crop&q=60' },
-            { id: 'b4', cat: 'beers', tag: 'craft', name: { sr: 'Belgian Witbier', en: 'Crisp Belgian Witbier', ru: 'Бельгийское пшеничное' }, price: 600, desc: { sr: 'Pšenično pivo kuvano sa korijanderom i korom pomorandže', en: 'Wheat beer brewed with coriander and orange peel', ru: 'Пшеничное пиво с кориандром и цедрой' }, img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&auto=format&fit=crop&q=60' },
-            { id: 'b5', cat: 'bites', tag: 'bites', name: { sr: 'Pomfrit sa Trufama i Parmezanom', en: 'Truffle Parmesan Fries', ru: 'Картофель фри с трюфелем и пармезаном' }, price: 850, desc: { sr: 'Ručno seckani krompir, ulje belog tartufa, rendani parmezan', en: 'Hand-cut fries, white truffle oil, shaved parmesan', ru: 'Картофель фри, трюфельное масло, пармезан' }, img: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=400&auto=format&fit=crop&q=60' },
-            { id: 'b6', cat: 'bites', tag: 'bites', name: { sr: 'Domaća Selekcija Sireva i Suhomesnatog', en: 'Artisan Cheese & Charcuterie', ru: 'Сырная и мясная тарелка' }, price: 1800, desc: { sr: 'Suvomescapeni proizvodi, odležali sirevi, džem od smokve, hleb', en: 'Cured meats, aged cheeses, fig jam, toasted crostini', ru: 'Вяленое мясо, выдержанные сыры, инжирный джем' }, img: 'https://images.unsplash.com/photo-1541529086526-db283c563270?w=400&auto=format&fit=crop&q=60' }
+            { id: 'b1', cat: 'cocktails', tag: 'cocktail', name: { sr: 'Smoked Old Fashioned', en: 'Smoked Old Fashioned', ru: 'Smoked Old Fashioned' }, price: 1200, desc: { sr: 'Burbon, aromatični bitter, kora pomorandže', en: 'Bourbon, aromatic bitters, orange peel', ru: 'Бурбон, биттер, цедра' }, img: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&auto=format&fit=crop&q=60' },
+            { id: 'b2', cat: 'cocktails', tag: 'cocktail', name: { sr: 'Spicy Espresso Martini', en: 'Spicy Espresso Martini', ru: 'Spicy Espresso Martini' }, price: 1350, desc: { sr: 'Vodka, sveži espresso, liker od kafe', en: 'Vodka, fresh espresso, coffee liqueur', ru: 'Водка, эспрессо, ликер' }, img: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&auto=format&fit=crop&q=60' },
+            { id: 'b3', cat: 'beers', tag: 'craft', name: { sr: 'Hazy IPA (Pinta)', en: 'Hazy IPA (Pint)', ru: 'Hazy IPA (Пинта)' }, price: 650, desc: { sr: 'Citrusno, tropsko zanatsko pivo', en: 'Citrusy, tropical craft IPA', ru: 'Цитрусовый крафтовый IPA' }, img: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&auto=format&fit=crop&q=60' },
+            { id: 'b4', cat: 'beers', tag: 'craft', name: { sr: 'Belgian Witbier', en: 'Crisp Belgian Witbier', ru: 'Belgian Witbier' }, price: 600, desc: { sr: 'Pšenično pivo sa korijanderom', en: 'Wheat beer with coriander', ru: 'Пшеничное пиво' }, img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&auto=format&fit=crop&q=60' },
+            { id: 'b5', cat: 'bites', tag: 'bites', name: { sr: 'Pomfrit sa Trufama', en: 'Truffle Parmesan Fries', ru: 'Фри с трюфелем' }, price: 850, desc: { sr: 'Ručno seckani krompir, ulje tartufa', en: 'Hand-cut fries, truffle oil', ru: 'Картофель, трюфельное масло' }, img: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=400&auto=format&fit=crop&q=60' },
+            { id: 'b6', cat: 'bites', tag: 'bites', name: { sr: 'Selekcija Sireva', en: 'Artisan Cheese & Charcuterie', ru: 'Сырная тарелка' }, price: 1800, desc: { sr: 'Suhomesnati proizvodi, sirevi', en: 'Cured meats, aged cheeses', ru: 'Мясо, сыры' }, img: 'https://images.unsplash.com/photo-1541529086526-db283c563270?w=400&auto=format&fit=crop&q=60' }
         ];
 
-        function formatPrice(rsdPrice) {
-            return `${Math.round(rsdPrice)} RSD`;
-        }
+        function formatPrice(rsd) { return `${Math.round(rsd)} RSD`; }
 
-        // Render Menu & Update Text Elements
         window.renderMenu = function() {
             const t = uiText[currentLang];
 
-            // Update static UI elements
-            document.getElementById('table-indicator').innerText = t.table;
-            document.getElementById('filter-all-btn').innerText = t.allCat;
-            document.getElementById('filter-cocktail-btn').innerText = t.cocktailCat;
-            document.getElementById('filter-craft-btn').innerText = t.craftCat;
-            document.getElementById('filter-bites-btn').innerText = t.bitesCat;
-            document.getElementById('call-waiter-btn').querySelector('span').innerText = t.callWaiter;
-            document.getElementById('cart-btn-text').innerText = t.viewTab;
-            document.getElementById('modal-notes-label').innerText = t.noteLabel;
-            document.getElementById('modal-notes').placeholder = t.notePlaceholder;
-            document.getElementById('modal-add-btn').innerText = t.addToTab;
-            document.getElementById('cart-header-title').innerText = t.cartHeader;
-            document.getElementById('split-label').innerText = t.splitLabel;
-            document.getElementById('split-guests-label').innerText = t.guestsLabel;
-            document.getElementById('per-person-label').innerText = t.perPerson;
-            document.getElementById('total-label').innerText = t.totalLabel;
-            document.getElementById('checkout-btn').innerText = t.checkout;
-            document.getElementById('review-title').innerText = t.reviewTitle;
-            document.getElementById('review-desc').innerText = t.reviewDesc;
-            document.getElementById('review-link-btn').innerText = t.reviewBtn;
-            document.getElementById('review-close-btn').innerText = t.reviewClose;
+            // Safely update elements if they exist
+            const safeSetText = (id, text) => { const el = document.getElementById(id); if(el) el.innerText = text; };
+            const safeSetProp = (id, prop, val) => { const el = document.getElementById(id); if(el) el[prop] = val; };
+
+            safeSetText('table-indicator', t.table);
+            safeSetText('filter-all-btn', t.allCat);
+            safeSetText('filter-cocktail-btn', t.cocktailCat);
+            safeSetText('filter-craft-btn', t.craftCat);
+            safeSetText('filter-bites-btn', t.bitesCat);
+            safeSetText('call-waiter-text-inner', t.callWaiter);
+            safeSetText('cart-btn-text', t.viewTab);
+            safeSetText('modal-notes-label', t.noteLabel);
+            safeSetProp('modal-notes', 'placeholder', t.notePlaceholder);
+            safeSetText('modal-add-btn', t.addToTab);
+            safeSetText('cart-header-title', t.cartHeader);
+            safeSetText('split-label', t.splitLabel);
+            safeSetText('split-guests-label', t.guestsLabel);
+            safeSetText('per-person-label', t.perPerson);
+            safeSetText('total-label', t.totalLabel);
+            safeSetText('checkout-btn', t.checkout);
 
             const container = document.getElementById('menu-container');
             if (!container) return;
             container.innerHTML = '';
 
             const categories = { 
-                cocktails: currentLang === 'sr' ? '🍸 Zanatski Kokteli' : currentLang === 'ru' ? '🍸 Авторские коктейли' : '🍸 Craft Cocktails', 
-                beers: currentLang === 'sr' ? '🍺 Točeno i Zanatsko Pivo' : currentLang === 'ru' ? '🍺 Разливное и крафтовое пиво' : '🍺 Tap & Craft Beers', 
-                bites: currentLang === 'sr' ? '🍺 / 🥨 Zalogaji i Meze' : currentLang === 'ru' ? '🥨 Закуски и снеки' : '🥨 Bar Bites & Sharables' 
+                cocktails: '🍸 ' + (currentLang === 'sr' ? 'Zanatski Kokteli' : currentLang === 'ru' ? 'Коктейли' : 'Cocktails'), 
+                beers: '🍺 ' + (currentLang === 'sr' ? 'Točeno i Zanatsko Pivo' : currentLang === 'ru' ? 'Пиво' : 'Craft Beers'), 
+                bites: '🥨 ' + (currentLang === 'sr' ? 'Zalogaji i Meze' : currentLang === 'ru' ? 'Закуски' : 'Bar Bites') 
             };
 
             for (const [catKey, catTitle] of Object.entries(categories)) {
@@ -324,10 +293,10 @@
                     const isSoldOut = soldOutItems[item.id] || false;
                     sectionHtml += `
                         <div class="bg-white border ${isSoldOut ? 'border-red-200 opacity-60' : 'border-zinc-200/80'} rounded-2xl p-3.5 flex items-center justify-between space-x-3.5 shadow-sm">
-                            <img src="${item.img}" class="w-20 h-20 rounded-xl object-cover" alt="${item.name.en}">
+                            <img src="${item.img}" class="w-20 h-20 rounded-xl object-cover" alt="item">
                             <div class="flex-1 min-w-0">
-                                <h3 class="font-bold text-sm text-zinc-900 truncate">${item.name[currentLang]}</h3>
-                                <p class="text-xs text-zinc-500 line-clamp-1 mt-0.5">${item.desc[currentLang]}</p>
+                                <h3 class="font-bold text-sm text-zinc-900 truncate">${item.name[currentLang] || item.name.en}</h3>
+                                <p class="text-xs text-zinc-500 line-clamp-1 mt-0.5">${item.desc[currentLang] || item.desc.en}</p>
                                 <div class="flex items-center justify-between mt-2.5">
                                     <span class="font-mono font-bold text-orange-700 text-sm">${formatPrice(item.price)}</span>
                                     ${isAdmin ? `
@@ -366,8 +335,8 @@
 
         window.openCustomModal = function(id) {
             selectedItemForModal = menuData.find(i => i.id === id);
-            document.getElementById('modal-item-name').innerText = selectedItemForModal.name[currentLang];
-            document.getElementById('modal-item-desc').innerText = selectedItemForModal.desc[currentLang];
+            document.getElementById('modal-item-name').innerText = selectedItemForModal.name[currentLang] || selectedItemForModal.name.en;
+            document.getElementById('modal-item-desc').innerText = selectedItemForModal.desc[currentLang] || selectedItemForModal.desc.en;
             document.getElementById('modal-notes').value = '';
             document.getElementById('custom-modal').classList.remove('hidden');
         };
@@ -391,7 +360,7 @@
             const cartKey = `${selectedItemForModal.id}_${Date.now()}`;
             cartItems[cartKey] = {
                 id: selectedItemForModal.id,
-                name: selectedItemForModal.name[currentLang],
+                name: selectedItemForModal.name[currentLang] || selectedItemForModal.name.en,
                 price: selectedItemForModal.price,
                 notes: notes,
                 qty: 1
@@ -414,7 +383,7 @@
                     <div class="py-3 flex items-center justify-between">
                         <div>
                             <h4 class="font-bold text-xs text-zinc-900">${item.name}</h4>
-                            ${item.notes ? `<p class="text-[10px] text-orange-700 font-medium">Napomena / Note: ${item.notes}</p>` : ''}
+                            ${item.notes ? `<p class="text-[10px] text-orange-700 font-medium">Napomena: ${item.notes}</p>` : ''}
                             <span class="font-mono text-xs text-zinc-500">${formatPrice(item.price)}</span>
                         </div>
                         <div class="flex items-center space-x-2">
@@ -426,8 +395,10 @@
                 `;
             }
 
-            document.getElementById('cart-count').innerText = count;
-            document.getElementById('cart-total-amount').innerText = formatPrice(total);
+            const countEl = document.getElementById('cart-count');
+            if(countEl) countEl.innerText = count;
+            const totalEl = document.getElementById('cart-total-amount');
+            if(totalEl) totalEl.innerText = formatPrice(total);
             updateSplitBill(total);
         };
 
@@ -441,21 +412,23 @@
 
         window.adjustSplit = function(delta) {
             splitCount = Math.max(1, splitCount + delta);
-            document.getElementById('split-count').innerText = splitCount;
+            const splitEl = document.getElementById('split-count');
+            if(splitEl) splitEl.innerText = splitCount;
             let total = Object.values(cartItems).reduce((acc, item) => acc + (item.price * item.qty), 0);
             updateSplitBill(total);
         };
 
         window.updateSplitBill = function(total) {
             const perPerson = total / splitCount;
-            document.getElementById('split-per-person-amount').innerText = formatPrice(perPerson);
+            const perPersonEl = document.getElementById('split-per-person-amount');
+            if(perPersonEl) perPersonEl.innerText = formatPrice(perPerson);
         };
 
         window.openCart = function() { document.getElementById('cart-modal').classList.remove('hidden'); };
         window.closeCart = function() { document.getElementById('cart-modal').classList.add('hidden'); };
 
         window.placeOrder = function() {
-            if (Object.keys(cartItems).length === 0) return alert(currentLang === 'sr' ? 'Vaš račun je prazan!' : currentLang === 'ru' ? 'Ваш счёт пуст!' : 'Your tab is empty!');
+            if (Object.keys(cartItems).length === 0) return alert('Vaš račun je prazan!');
             const ordersRef = ref(db, 'orders');
             const newOrderRef = push(ordersRef);
             
@@ -478,7 +451,7 @@
         window.callWaiter = function() {
             const waiterRef = ref(db, `tables/table_${tableId}/waiterCall`);
             set(waiterRef, { timestamp: Date.now(), status: 'pending' }).then(() => {
-                alert(currentLang === 'sr' ? 'Barmen je obavešten! 🍸' : currentLang === 'ru' ? 'Бармен оповещён! 🍸' : 'Bartender notified! 🍸');
+                alert('Barmen je obavešten! 🍸');
             });
         };
 
@@ -486,7 +459,7 @@
             update(ref(db, 'soldOut'), { [itemId]: status });
         };
 
-        // Render immediately on load
+        // Initialize display immediately
         renderMenu();
     </script>
 </body>
